@@ -13,6 +13,8 @@ import { formatTokenNumber } from '@/lib/utils'
 import * as service from '@/services/queue.service'
 import type { QueueToken } from '@/types/queue'
 
+type TokenState = QueueToken | null | 'not-found' | 'loading'
+
 export default function QueueStatusPage() {
   const params = useParams()
   const router = useRouter()
@@ -20,16 +22,24 @@ export default function QueueStatusPage() {
 
   const { summary, loadSummary, cancelToken, isProcessing } = useQueueStore()
 
-  const [token, setToken] = useState<QueueToken | null | 'not-found'>('not-found')
+  const [token, setToken] = useState<TokenState>('loading')
   const [isCancelling, setIsCancelling] = useState(false)
 
   const refreshToken = useCallback(async () => {
-    const t = await service.fetchToken(tokenNumber)
-    setToken(t)  // null = not found → renders <NotFound />, QueueToken = found
+    try {
+      const t = await service.fetchToken(tokenNumber)
+      setToken(t ?? null) // null = not found, QueueToken = found
+    } catch (err) {
+      console.error('Failed to fetch token:', err)
+      // Keep current state on error to avoid flashing wrong UI
+    }
   }, [tokenNumber])
 
   useEffect(() => {
-    if (isNaN(tokenNumber)) { setToken('not-found'); return }
+    if (isNaN(tokenNumber)) {
+      setToken('not-found')
+      return
+    }
     refreshToken()
     loadSummary()
   }, [tokenNumber, refreshToken, loadSummary])
@@ -42,22 +52,31 @@ export default function QueueStatusPage() {
   usePolling(refresh, 4_000)
 
   const handleCancel = async () => {
-    if (!token || token === 'not-found') return
+    if (!token || typeof token !== 'object') return
+
     const confirmed = window.confirm(
       `Cancel token ${formatTokenNumber(tokenNumber)}? This cannot be undone.`,
     )
     if (!confirmed) return
+
     setIsCancelling(true)
-    await cancelToken((token as QueueToken).id)
-    setIsCancelling(false)
-    router.push('/')
+    try {
+      await cancelToken(token.id)
+      router.push('/')
+    } catch (err) {
+      console.error('Failed to cancel token:', err)
+    } finally {
+      setIsCancelling(false)
+    }
   }
 
+  // Invalid token number in URL
   if (isNaN(tokenNumber)) {
     return <NotFound />
   }
 
-  if (token === 'not-found') {
+  // Loading state — waiting for first fetch
+  if (token === 'loading') {
     return (
       <div className="min-h-dvh flex items-center justify-center">
         <Spinner size="lg" className="text-gold" />
@@ -65,11 +84,15 @@ export default function QueueStatusPage() {
     )
   }
 
-  if (!token) {
+  // Token does not exist
+  if (token === 'not-found' || token === null) {
     return <NotFound />
   }
 
-  const isDone = token.status === 'completed' || token.status === 'cancelled' || token.status === 'skipped'
+  const isDone =
+    token.status === 'completed' ||
+    token.status === 'cancelled' ||
+    token.status === 'skipped'
 
   return (
     <main className="min-h-dvh flex flex-col items-center px-4 pb-16">
@@ -123,9 +146,9 @@ export default function QueueStatusPage() {
 
 function DoneCard({ status }: { status: QueueToken['status'] }) {
   const messages: Partial<Record<QueueToken['status'], { title: string; body: string }>> = {
-    completed:  { title: 'All done',     body: 'Thank you for visiting. See you next time.' },
-    cancelled:  { title: 'Cancelled',    body: 'Your token has been cancelled.' },
-    skipped:    { title: 'Skipped',      body: 'Your token was skipped. Please speak to a barber.' },
+    completed: { title: 'All done',  body: 'Thank you for visiting. See you next time.' },
+    cancelled: { title: 'Cancelled', body: 'Your token has been cancelled.' },
+    skipped:   { title: 'Skipped',   body: 'Your token was skipped. Please speak to a barber.' },
   }
   const msg = messages[status] ?? { title: 'Done', body: '' }
 
@@ -133,7 +156,10 @@ function DoneCard({ status }: { status: QueueToken['status'] }) {
     <div className="flex flex-col items-center gap-2 py-4 text-center">
       <p className="text-base font-semibold text-ink-primary">{msg.title}</p>
       {msg.body && <p className="text-sm text-ink-secondary">{msg.body}</p>}
-      <Link href="/" className="mt-3 text-sm text-gold hover:text-gold-light underline underline-offset-2">
+      <Link
+        href="/"
+        className="mt-3 text-sm text-gold hover:text-gold-light underline underline-offset-2"
+      >
         Take a new token
       </Link>
     </div>
@@ -144,7 +170,10 @@ function NotFound() {
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center gap-4 px-4">
       <p className="text-base font-medium text-ink-secondary">Token not found</p>
-      <Link href="/" className="text-sm text-gold hover:text-gold-light underline underline-offset-2">
+      <Link
+        href="/"
+        className="text-sm text-gold hover:text-gold-light underline underline-offset-2"
+      >
         Back to home
       </Link>
     </div>
