@@ -2,28 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap');
+
 /* -----------------------------------------------------------------------
    Design tokens
 ------------------------------------------------------------------------ */
 :root {
-  --bg-base:     #060606;
-  --bg-surface:  #101010;
-  --bg-elevated: #161616;
-  --bg-overlay:  #1f1f1f;
+  --bg-base:     #F5F3EE;
+  --bg-surface:  #FFFFFF;
+  --bg-elevated: #FBF9F6;
+  --bg-overlay:  #F0EDE8;
 
-  --line:         #2b2b2b;
-  --line-light:   #1f1f1f;
+  --line:         #E6E1D9;
+  --line-light:   #F0ECE6;
   --line-focus:   #C4A86A;
 
-  --ink-primary:   #F7F3EB;
-  --ink-secondary: #A69D8A;
-  --ink-muted:     #7B7468;
+  --ink-primary:   #26221E;
+  --ink-secondary: #7B7468;
+  --ink-muted:     #9A9488;
 
   --gold:          #C4A86A;
   --gold-light:    #D9BC8C;
   --gold-dark:     #A58546;
-  --gold-faint:    rgba(196, 168, 106, 0.10);
-  --shadow-soft:   0 36px 100px rgba(0, 0, 0, 0.35);
+  --gold-faint:    rgba(196, 168, 106, 0.08);
+  --shadow-soft:   0 30px 60px rgba(38,34,30,0.06);
 }
 
 /* -----------------------------------------------------------------------
@@ -41,11 +43,19 @@ html {
 body {
   background-color: var(--bg-base);
   color: var(--ink-primary);
-  background-image: radial-gradient(circle at top left, rgba(196, 168, 106, 0.08), transparent 24%), radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.03), transparent 18%);
-  background-attachment: fixed;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
+}
+
+h1, h2, h3, h4 {
+  font-family: Playfair Display, serif;
+  color: var(--ink-primary);
+}
+
+.hero-subtle {
+  background-image: linear-gradient(180deg, rgba(196,168,106,0.04), transparent);
 }
 
 /* -----------------------------------------------------------------------

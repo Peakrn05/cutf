@@ -12,17 +12,17 @@ interface BadgeProps {
 
 const variants: Record<Variant, string> = {
   waiting:
-    'bg-[#121212] text-ink-secondary border border-line/60',
+    'bg-bg-elevated text-ink-secondary border border-line/40',
   called:
-    'bg-[#1b1408] text-[#D9BC8C] border border-[#5c4828]/50',
+    'bg-[#FFF8F1] text-[#C07A2A] border border-[#F1E6D9]',
   serving:
-    'bg-[#142116] text-emerald-300 border border-emerald-800/50',
+    'bg-[#F1FBF6] text-emerald-700 border border-emerald-100',
   completed:
-    'bg-[#111111] text-ink-muted border border-line-light',
+    'bg-bg-surface text-ink-muted border border-line-light',
   cancelled:
-    'bg-red-950/40 text-red-400 border border-red-900/50',
+    'bg-[#FFF1F1] text-red-600 border border-red-100',
   skipped:
-    'bg-[#111111] text-ink-muted border border-line-light',
+    'bg-bg-surface text-ink-muted border border-line-light',
   neutral:
     'bg-bg-elevated text-ink-secondary border border-line',
 }

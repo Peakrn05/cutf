@@ -10,20 +10,20 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          base: '#060606',
-          surface: '#101010',
-          elevated: '#161616',
-          overlay: '#1f1f1f',
+          base: '#F5F3EE',
+          surface: '#FFFFFF',
+          elevated: '#FBF9F6',
+          overlay: '#F0EDE8',
         },
         line: {
-          DEFAULT: '#2b2b2b',
-          light: '#1f1f1f',
+          DEFAULT: '#E6E1D9',
+          light: '#F0ECE6',
           focus: '#C4A86A',
         },
         ink: {
-          primary: '#F7F3EB',
-          secondary: '#A69D8A',
-          muted: '#7B7468',
+          primary: '#26221E',
+          secondary: '#7B7468',
+          muted: '#9A9488',
         },
         gold: {
           DEFAULT: '#C4A86A',
@@ -32,16 +32,17 @@ const config: Config = {
           faint: '#C4A86A1A',
         },
         status: {
-          waiting: '#4A4A4A',
+          waiting: '#9A9488',
           called: '#B45309',
           serving: '#15803D',
-          done: '#1F2937',
+          done: '#6B6B6B',
           cancelled: '#7F1D1D',
         },
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-geist-mono)', 'ui-monospace', 'monospace'],
+        display: ['Playfair Display', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['ui-monospace', 'monospace'],
       },
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '1rem' }],
