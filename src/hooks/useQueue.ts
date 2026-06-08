@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useQueueStore } from '@/store/queue.store'
 import { usePolling } from './usePolling'
 import * as service from '@/services/queue.service'
@@ -24,9 +24,9 @@ export function useQueueSummary(pollMs = 5_000) {
 export function useTokenStatus(tokenNumber: number, pollMs = 4_000) {
   const { summary, loadSummary } = useQueueStore()
 
-  const getToken = async (): Promise<QueueToken | null> => {
+  const getToken = useCallback(async (): Promise<QueueToken | null> => {
     return service.fetchToken(tokenNumber)
-  }
+  }, [tokenNumber])
 
   usePolling(loadSummary, pollMs)
 
@@ -49,13 +49,13 @@ export function useDisplayBoard(pollMs = 3_000) {
 
 // Hook for admin — loads everything + polls
 export function useAdminQueue(pollMs = 5_000) {
-  const store = useQueueStore()
+  const { loadAll, ...store } = useQueueStore()
 
   useEffect(() => {
-    store.loadAll()
-  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
+    loadAll()
+  }, [loadAll])
 
-  usePolling(store.loadAll, pollMs)
+  usePolling(loadAll, pollMs)
 
-  return store
+  return { loadAll, ...store }
 }

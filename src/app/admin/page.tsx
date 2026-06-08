@@ -34,6 +34,15 @@ export default function AdminQueuePage() {
     )
   }
 
+  if (!store.summary) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-base font-semibold text-ink-primary">Loading queue details</p>
+        <p className="text-sm text-ink-secondary">Please wait while we fetch the latest queue state.</p>
+      </div>
+    )
+  }
+
   const completedTokens = store.allTokens.filter(t => t.status === 'completed')
   const waitingTokens = store.allTokens.filter(t => t.status === 'waiting')
   const nextToken = waitingTokens[0] || null

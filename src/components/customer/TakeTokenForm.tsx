@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ServiceSelector } from './ServiceSelector'
 import { Button } from '@/components/ui/Button'
@@ -29,23 +29,36 @@ export function TakeTokenForm({ shop, summary }: TakeTokenFormProps) {
   const handleSelect = useCallback(
     (id: ServiceId) => {
       setSelectedService(id)
-      if (error) clearError()
+      if (error) {
+        clearError()
+      }
     },
-    [error, clearError],
+    [clearError, error],
   )
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedService || !shop.isOpen || summary.isQueueFull) return
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      if (!selectedService || !shop.isOpen || summary.isQueueFull) return
 
-    const token = await takeToken(selectedService, customerName || undefined)
-    setNewTokenNumber(token.number)
-    setFormState('success')
+      const token = await takeToken(selectedService, customerName || undefined)
+      setNewTokenNumber(token.number)
+      setFormState('success')
+    },
+    [selectedService, shop.isOpen, summary.isQueueFull, takeToken, customerName],
+  )
 
-    setTimeout(() => {
-      router.push(`/queue/${token.number}`)
-    }, 1800)
-  }
+  useEffect(() => {
+    if (newTokenNumber === null) return
+
+    const timer = window.setTimeout(() => {
+      router.push(`/queue/${newTokenNumber}`)
+    }, 1400)
+
+    return () => window.clearTimeout(timer)
+  }, [newTokenNumber, router])
+
+  const isSubmitDisabled = !selectedService || !shop.isOpen || summary.isQueueFull
 
   if (formState === 'success' && newTokenNumber !== null) {
     return <TokenIssuedCard number={newTokenNumber} />
@@ -109,9 +122,9 @@ export function TakeTokenForm({ shop, summary }: TakeTokenFormProps) {
                   size="lg"
                   fullWidth
                   loading={isProcessing}
-                  disabled={!selectedService}
+                  disabled={isSubmitDisabled}
                 >
-                  Get My Number
+                  {isSubmitDisabled ? 'Select a service' : 'Get My Number'}
                 </Button>
               </div>
             </>

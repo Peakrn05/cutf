@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import type { QueueToken, Shop, QueueSummary, ServiceId } from '@/types/queue'
 import * as service from '@/services/queue.service'
+import { getErrorMessage } from '@/lib/utils'
 
 interface QueueStore {
   // ---- state ----
@@ -45,9 +46,12 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     try {
       const shop = await service.fetchShop()
       set({ shop, isLoading: false, hasInitialized: true, error: null })
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Cannot reach the server.'
-      set({ isLoading: false, hasInitialized: true, error: msg })
+    } catch (error) {
+      set({
+        isLoading: false,
+        hasInitialized: true,
+        error: getErrorMessage(error, 'Cannot reach the server.'),
+      })
     }
   },
 
@@ -55,9 +59,11 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     try {
       const summary = await service.fetchQueueSummary()
       set({ summary, hasInitialized: true, error: null })
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Cannot reach the server.'
-      set({ hasInitialized: true, error: msg })
+    } catch (error) {
+      set({
+        hasInitialized: true,
+        error: getErrorMessage(error, 'Cannot reach the server.'),
+      })
     }
   },
 
@@ -70,9 +76,12 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
         service.fetchAllTokens(),
       ])
       set({ shop, summary, allTokens, isLoading: false, hasInitialized: true, error: null })
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Cannot reach the server.'
-      set({ isLoading: false, hasInitialized: true, error: msg })
+    } catch (error) {
+      set({
+        isLoading: false,
+        hasInitialized: true,
+        error: getErrorMessage(error, 'Cannot reach the server.'),
+      })
     }
   },
 
@@ -83,66 +92,66 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       await get().loadSummary()
       set({ isProcessing: false })
       return token
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to take token.'
+    } catch (error) {
+      const msg = getErrorMessage(error, 'Failed to take token.')
       set({ isProcessing: false, error: msg })
-      throw e
+      throw error
     }
   },
 
   cancelToken: async tokenId => {
-    set({ isProcessing: true })
+    set({ isProcessing: true, error: null })
     try {
       await service.cancelToken(tokenId)
       await get().loadSummary()
       set({ isProcessing: false })
-    } catch {
-      set({ isProcessing: false, error: 'Failed to cancel token.' })
+    } catch (error) {
+      set({ isProcessing: false, error: getErrorMessage(error, 'Failed to cancel token.') })
     }
   },
 
   callNext: async () => {
-    set({ isProcessing: true })
+    set({ isProcessing: true, error: null })
     try {
       await service.callNext()
       await get().loadAll()
       set({ isProcessing: false })
-    } catch {
-      set({ isProcessing: false, error: 'Failed to call next.' })
+    } catch (error) {
+      set({ isProcessing: false, error: getErrorMessage(error, 'Failed to call next.') })
     }
   },
 
   completeServing: async () => {
-    set({ isProcessing: true })
+    set({ isProcessing: true, error: null })
     try {
       await service.completeServing()
       await get().loadAll()
       set({ isProcessing: false })
-    } catch {
-      set({ isProcessing: false, error: 'Failed to complete serving.' })
+    } catch (error) {
+      set({ isProcessing: false, error: getErrorMessage(error, 'Failed to complete serving.') })
     }
   },
 
   skipToken: async tokenId => {
-    set({ isProcessing: true })
+    set({ isProcessing: true, error: null })
     try {
       await service.skipToken(tokenId)
       await get().loadAll()
       set({ isProcessing: false })
-    } catch {
-      set({ isProcessing: false, error: 'Failed to skip token.' })
+    } catch (error) {
+      set({ isProcessing: false, error: getErrorMessage(error, 'Failed to skip token.') })
     }
   },
 
   toggleOpen: async () => {
     const current = get().shop
     if (!current) return
-    set({ isProcessing: true })
+    set({ isProcessing: true, error: null })
     try {
       const updated = await service.updateShop({ isOpen: !current.isOpen })
       set({ shop: updated, isProcessing: false })
-    } catch {
-      set({ isProcessing: false, error: 'Failed to update shop status.' })
+    } catch (error) {
+      set({ isProcessing: false, error: getErrorMessage(error, 'Failed to update shop status.') })
     }
   },
 

@@ -79,3 +79,16 @@ export function statusColor(status: TokenStatus): string {
   }
   return map[status]
 }
+
+export function getErrorMessage(error: unknown, fallback = 'Something went wrong'): string {
+  if (error instanceof Error) return error.message
+  if (typeof error === 'string') return error
+  return fallback
+}
+
+export function formatServiceLabel(serviceId: string): string {
+  return serviceId
+    .split('-')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' + ')
+}

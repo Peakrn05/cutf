@@ -1,6 +1,6 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? ''
 
-type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE'
+type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
 
 export class ApiError extends Error {
   status: number
@@ -14,9 +14,16 @@ export class ApiError extends Error {
   }
 }
 
+function buildUrl(path: string) {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+  return `${BASE_URL}${path}`
+}
+
 export async function apiFetch<T>(
   path: string,
-  method: Method = 'GET',
+  method: HttpMethod = 'GET',
   body?: unknown,
   timeoutMs = 8_000,
 ): Promise<T> {
@@ -24,9 +31,11 @@ export async function apiFetch<T>(
   const timer = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
-    const headers: HeadersInit = { 'Content-Type': 'application/json' }
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    }
 
-    const res = await fetch(`${BASE_URL}${path}`, {
+    const res = await fetch(buildUrl(path), {
       method,
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -41,16 +50,18 @@ export async function apiFetch<T>(
         const err = await res.json()
         message = err.message ?? message
         code = err.code ?? code
-      } catch {}
+      } catch {
+        // ignore parsing failures
+      }
       throw new ApiError(message, res.status, code)
     }
 
-    return res.json() as Promise<T>
-  } catch (e) {
-    if (e instanceof Error && e.name === 'AbortError') {
+    return (await res.json()) as T
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new ApiError('Request timed out. Is the backend running?', 408, 'TIMEOUT')
     }
-    throw e
+    throw error
   } finally {
     clearTimeout(timer)
   }

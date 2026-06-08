@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { getErrorMessage } from '@/lib/utils'
 import * as service from '@/services/queue.service'
 
 export function TokenLookup() {
@@ -12,10 +13,10 @@ export function TokenLookup() {
   const [isChecking, setIsChecking] = useState(false)
   const [error, setError] = useState('')
 
-  const handleCheck = async (e: React.FormEvent) => {
+  const handleCheck = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const num = parseInt(value, 10)
-    if (!num || num < 1 || num > 999) {
+    const num = Number(value)
+    if (!Number.isInteger(num) || num < 1 || num > 999) {
       setError('Enter a valid 3-digit token number.')
       return
     }
@@ -23,15 +24,18 @@ export function TokenLookup() {
     setIsChecking(true)
     setError('')
 
-    const token = await service.fetchToken(num)
-
-    if (!token) {
+    try {
+      const token = await service.fetchToken(num)
+      if (!token) {
+        setError('Token not found. Check your number and try again.')
+        return
+      }
+      router.push(`/queue/${num}`)
+    } catch (err) {
+      setError(getErrorMessage(err, 'Unable to look up token. Please try again.'))
+    } finally {
       setIsChecking(false)
-      setError('Token not found. Check your number and try again.')
-      return
     }
-
-    router.push(`/queue/${num}`)
   }
 
   return (
@@ -47,14 +51,14 @@ export function TokenLookup() {
           }}
           inputMode="numeric"
           maxLength={3}
-          // className="flex-1"
+          className="flex-1"
           aria-label="Token number"
         />
         <Button
           type="submit"
           variant="secondary"
           loading={isChecking}
-          disabled={!value}
+          disabled={!value.trim()}
           className="flex-1"
         >
           Check
