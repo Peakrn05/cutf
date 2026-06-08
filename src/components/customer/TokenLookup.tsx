@@ -47,7 +47,7 @@ export function TokenLookup() {
           }}
           inputMode="numeric"
           maxLength={3}
-          className="flex-1"
+          // className="flex-1"
           aria-label="Token number"
         />
         <Button
@@ -55,7 +55,7 @@ export function TokenLookup() {
           variant="secondary"
           loading={isChecking}
           disabled={!value}
-          className="shrink-0"
+          className="flex-1"
         >
           Check
         </Button>
