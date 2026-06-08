@@ -8,6 +8,7 @@ import { ServiceSelector } from '@/components/customer/ServiceSelector'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { formatServiceLabel, sanitizePhone, formatPhone } from '@/lib/utils'
+import { ApiError } from '@/lib/api'
 import { Card, CardSection, CardDivider } from '@/components/ui/Card'
 import { Spinner } from '@/components/ui/Spinner'
 import { fetchAvailableSlots, reserveSlot } from '@/services/slot.service'
@@ -108,6 +109,18 @@ export default function ReservePage() {
       })
       setConfirmed(reservation)
     } catch (e) {
+      // If backend rejects the time as invalid for the selected service,
+      // surface the message, refresh available slots for the service, and
+      // clear the selected time so the user can pick another slot.
+      if (e instanceof ApiError && e.status === 400) {
+        const msg = e.message || 'Selected time is not valid for this service.'
+        setSlotError(msg)
+        setSelectedTime(null)
+        // reload slots for the selected service/date to show current availability
+        try { await loadSlots(selectedDate, selectedService) } catch { /* ignore */ }
+        return
+      }
+
       setError(e instanceof Error ? e.message : 'Failed to reserve slot.')
     } finally {
       setSubmitting(false)
