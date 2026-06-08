@@ -39,6 +39,7 @@ export default function ReservePage() {
   const [selectedDate, setSelectedDate] = useState(tomorrowString())
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [slotsLoading, setSlotsLoading] = useState(false)
+  const [slotError, setSlotError] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [selectedService, setSelectedService] = useState<ServiceId | null>(null)
   const [customerName, setCustomerName] = useState('')
@@ -56,12 +57,17 @@ export default function ReservePage() {
   const loadSlots = useCallback(async (date: string) => {
     setSlotsLoading(true)
     setSelectedTime(null)
-    setError(null)
+    setSlotError(null)
     try {
       const data = await fetchAvailableSlots(date)
-      setSlots(data.slots)
-    } catch {
+      setSlots(data.slots ?? [])
+    } catch (e) {
       setSlots([])
+      setSlotError(
+        e instanceof Error
+          ? `Unable to load available times: ${e.message}`
+          : 'Unable to load available times. Please try again.',
+      )
     } finally {
       setSlotsLoading(false)
     }
@@ -181,6 +187,17 @@ export default function ReservePage() {
                 {slotsLoading ? (
                   <div className="flex justify-center py-4">
                     <Spinner size="sm" className="text-gold" />
+                  </div>
+                ) : slotError ? (
+                  <div className="space-y-3 py-4 text-center">
+                    <p className="text-sm text-red-300">{slotError}</p>
+                    <button
+                      type="button"
+                      onClick={() => loadSlots(selectedDate)}
+                      className="inline-flex items-center justify-center rounded-lg border border-gold/30 px-4 py-2 text-sm font-medium text-gold hover:bg-gold/5 transition"
+                    >
+                      Try again
+                    </button>
                   </div>
                 ) : (
                   <TimeSlotGrid

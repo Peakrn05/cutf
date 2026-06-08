@@ -5,9 +5,9 @@ import type { ApiResponse } from '@/types/api'
 
 export async function fetchAvailableSlots(date: string): Promise<AvailableSlots> {
   const res = await apiFetch<ApiResponse<AvailableSlots>>(
-    `/api/slots/available?date=${date}`,
+    `/api/slots/available?date=${encodeURIComponent(date)}`,
   )
-  return res.data
+  return res?.data ?? { date, slots: [] }
 }
 
 export async function reserveSlot(payload: {
