@@ -15,17 +15,17 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base disabled:pointer-events-none disabled:opacity-40 select-none'
+  'inline-flex items-center justify-center gap-2 font-semibold tracking-wide transition-all duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base disabled:pointer-events-none disabled:opacity-40 select-none'
 
 const variants: Record<Variant, string> = {
   primary:
-    'bg-gold text-bg-base hover:bg-gold-light active:bg-gold-dark rounded-lg',
+    'bg-gradient-to-r from-gold-dark via-gold to-gold-light text-bg-base shadow-[0_20px_60px_-32px_rgba(196,168,106,0.40)] rounded-full hover:scale-[1.01] active:scale-100',
   secondary:
-    'border border-line bg-bg-surface text-ink-primary hover:border-line-focus hover:text-gold active:bg-bg-elevated rounded-lg',
+    'border border-line bg-bg-surface text-ink-primary hover:border-line-focus hover:text-gold active:bg-bg-elevated rounded-2xl',
   ghost:
-    'text-ink-secondary hover:text-ink-primary hover:bg-bg-elevated active:bg-bg-overlay rounded-lg',
+    'text-ink-secondary hover:text-ink-primary hover:bg-bg-elevated active:bg-bg-overlay rounded-2xl',
   destructive:
-    'border border-red-800 text-red-400 hover:bg-red-950 active:bg-red-900 rounded-lg',
+    'border border-red-800 text-red-400 hover:bg-red-950 active:bg-red-900 rounded-2xl',
 }
 
 const sizes: Record<Size, string> = {

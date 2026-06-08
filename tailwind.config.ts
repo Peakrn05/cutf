@@ -10,26 +10,26 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          base: '#090909',
-          surface: '#111111',
-          elevated: '#181818',
-          overlay: '#222222',
+          base: '#060606',
+          surface: '#101010',
+          elevated: '#161616',
+          overlay: '#1f1f1f',
         },
         line: {
-          DEFAULT: '#222222',
-          light: '#1a1a1a',
-          focus: '#C8A86A',
+          DEFAULT: '#2b2b2b',
+          light: '#1f1f1f',
+          focus: '#C4A86A',
         },
         ink: {
-          primary: '#F0F0F0',
-          secondary: '#7A7A7A',
-          muted: '#4A4A4A',
+          primary: '#F7F3EB',
+          secondary: '#A69D8A',
+          muted: '#7B7468',
         },
         gold: {
-          DEFAULT: '#C8A86A',
-          light: '#D4B87E',
-          dark: '#A88848',
-          faint: '#C8A86A1A',
+          DEFAULT: '#C4A86A',
+          light: '#D9BC8C',
+          dark: '#A58546',
+          faint: '#C4A86A1A',
         },
         status: {
           waiting: '#4A4A4A',

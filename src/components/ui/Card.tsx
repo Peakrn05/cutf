@@ -10,10 +10,10 @@ interface CardProps {
 }
 
 const variants: Record<Variant, string> = {
-  default:     'bg-bg-surface border border-line rounded-xl',
-  elevated:    'bg-bg-elevated border border-line rounded-xl',
-  flat:        'bg-bg-surface rounded-xl',
-  highlighted: 'bg-bg-surface border border-gold/40 rounded-xl ring-1 ring-gold/10',
+  default:     'bg-bg-surface border border-line/70 rounded-[28px] shadow-[0_30px_80px_-40px_rgba(0,0,0,0.48)]',
+  elevated:    'bg-bg-elevated border border-line/70 rounded-[28px] shadow-[0_36px_100px_-48px_rgba(0,0,0,0.50)]',
+  flat:        'bg-bg-surface rounded-[28px]',
+  highlighted: 'bg-bg-surface border border-gold/30 rounded-[28px] ring-1 ring-gold/10 shadow-[0_20px_60px_-34px_rgba(196,168,106,0.25)]',
 }
 
 export function Card({ variant = 'default', className, children, onClick }: CardProps) {
