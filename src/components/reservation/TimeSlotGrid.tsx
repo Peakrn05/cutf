@@ -25,22 +25,26 @@ export function TimeSlotGrid({ slots, selected, onSelect }: TimeSlotGridProps) {
 
   return (
     <div className="grid grid-cols-3 gap-2">
-      {slots.map(slot => (
-        <button
-          key={slot.time}
-          type="button"
-          disabled={!slot.available}
-          onClick={() => slot.available && onSelect(slot.time)}
-          className={cn(
-            'py-2.5 rounded-xl border text-sm font-medium transition-colors duration-150',
-            !slot.available && 'border-line bg-bg-elevated text-ink-muted opacity-40 cursor-not-allowed line-through',
-            slot.available && selected === slot.time && 'border-gold/60 bg-gold/10 text-gold',
-            slot.available && selected !== slot.time && 'border-line bg-bg-elevated text-ink-secondary hover:border-line-focus hover:text-ink-primary',
-          )}
-        >
-          {fmt(slot.time)}
-        </button>
-      ))}
+      {slots.map(slot => {
+        const isAvailable = slot.available ?? true
+
+        return (
+          <button
+            key={slot.time}
+            type="button"
+            disabled={!isAvailable}
+            onClick={() => isAvailable && onSelect(slot.time)}
+            className={cn(
+              'py-2.5 rounded-xl border text-sm font-medium transition-colors duration-150',
+              !isAvailable && 'border-line bg-bg-elevated text-ink-muted opacity-40 cursor-not-allowed line-through',
+              isAvailable && selected === slot.time && 'border-gold/60 bg-gold/10 text-gold',
+              isAvailable && selected !== slot.time && 'border-line bg-bg-elevated text-ink-secondary hover:border-line-focus hover:text-ink-primary',
+            )}
+          >
+            {fmt(slot.time)}
+          </button>
+        )
+      })}
     </div>
   )
 }

@@ -11,8 +11,9 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { label: 'Queue',    href: '/admin',          description: 'Manage live queue' },
-  { label: 'Settings', href: '/admin/settings', description: 'Shop configuration' },
+  { label: 'Queue',      href: '/admin',          description: 'Manage live queue' },
+  { label: 'Reserve',    href: '/reserve',        description: 'Book a customer slot' },
+  { label: 'Settings',   href: '/admin/settings', description: 'Shop configuration' },
 ]
 
 export function Sidebar() {
