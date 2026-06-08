@@ -54,12 +54,19 @@ export default function ReservePage() {
   }, [])
 
   // Load slots whenever date changes
-  const loadSlots = useCallback(async (date: string) => {
+  const loadSlots = useCallback(async (date: string, serviceId: ServiceId | null) => {
     setSlotsLoading(true)
     setSelectedTime(null)
     setSlotError(null)
+
+    if (!serviceId) {
+      setSlots([])
+      setSlotsLoading(false)
+      return
+    }
+
     try {
-      const data = await fetchAvailableSlots(date)
+      const data = await fetchAvailableSlots(date, serviceId)
       setSlots(data.slots ?? [])
     } catch (e) {
       setSlots([])
@@ -74,8 +81,8 @@ export default function ReservePage() {
   }, [])
 
   useEffect(() => {
-    loadSlots(selectedDate)
-  }, [selectedDate, loadSlots])
+    loadSlots(selectedDate, selectedService)
+  }, [selectedDate, selectedService, loadSlots])
 
   const handleDateChange = (date: string) => {
     setSelectedDate(date)
@@ -180,46 +187,65 @@ export default function ReservePage() {
               </CardSection>
             </Card>
 
-            {/* Step 2 — Time */}
+            {/* Step 2 — Service */}
             <Card>
               <CardSection className="p-4 flex flex-col gap-3">
-                <StepLabel n={2} text="Pick a time" />
-                {slotsLoading ? (
+                <StepLabel n={2} text="Pick a service" />
+                {shop ? (
+                  <ServiceSelector
+                    services={shop.services}
+                    selected={selectedService}
+                    onSelect={serviceId => {
+                      setSelectedService(serviceId)
+                      setSelectedTime(null)
+                    }}
+                  />
+                ) : (
                   <div className="flex justify-center py-4">
                     <Spinner size="sm" className="text-gold" />
                   </div>
-                ) : slotError ? (
-                  <div className="space-y-3 py-4 text-center">
-                    <p className="text-sm text-red-300">{slotError}</p>
-                    <button
-                      type="button"
-                      onClick={() => loadSlots(selectedDate)}
-                      className="inline-flex items-center justify-center rounded-lg border border-gold/30 px-4 py-2 text-sm font-medium text-gold hover:bg-gold/5 transition"
-                    >
-                      Try again
-                    </button>
-                  </div>
-                ) : (
-                  <TimeSlotGrid
-                    slots={slots}
-                    selected={selectedTime}
-                    onSelect={setSelectedTime}
-                  />
                 )}
               </CardSection>
             </Card>
 
-            {/* Step 3 — Details (only show after time picked) */}
+            {/* Step 3 — Time */}
+            <Card>
+              <CardSection className="p-4 flex flex-col gap-3">
+                <StepLabel n={3} text="Pick a time" />
+                {selectedService ? (
+                  slotsLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Spinner size="sm" className="text-gold" />
+                    </div>
+                  ) : slotError ? (
+                    <div className="space-y-3 py-4 text-center">
+                      <p className="text-sm text-red-300">{slotError}</p>
+                      <button
+                        type="button"
+                        onClick={() => loadSlots(selectedDate, selectedService)}
+                        className="inline-flex items-center justify-center rounded-lg border border-gold/30 px-4 py-2 text-sm font-medium text-gold hover:bg-gold/5 transition"
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  ) : (
+                    <TimeSlotGrid
+                      slots={slots}
+                      selected={selectedTime}
+                      onSelect={setSelectedTime}
+                    />
+                  )
+                ) : (
+                  <p className="text-sm text-ink-muted py-4">Choose a service first to see available times.</p>
+                )}
+              </CardSection>
+            </Card>
+
+            {/* Step 4 — Details (only show after time picked) */}
             {selectedTime && shop && (
               <Card>
                 <CardSection className="p-4 flex flex-col gap-4">
-                  <StepLabel n={3} text="Your details" />
-
-                  <ServiceSelector
-                    services={shop.services}
-                    selected={selectedService}
-                    onSelect={setSelectedService}
-                  />
+                  <StepLabel n={4} text="Your details" />
 
                   <Input
                     label="Your name"

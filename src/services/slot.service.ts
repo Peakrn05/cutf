@@ -3,9 +3,14 @@ import type { ServiceId } from '@/types/queue'
 import { apiFetch } from '@/lib/api'
 import type { ApiResponse } from '@/types/api'
 
-export async function fetchAvailableSlots(date: string): Promise<AvailableSlots> {
+export async function fetchAvailableSlots(date: string, serviceId?: string): Promise<AvailableSlots> {
+  const searchParams = new URLSearchParams({ date })
+  if (serviceId) {
+    searchParams.set('serviceId', serviceId)
+  }
+
   const res = await apiFetch<ApiResponse<AvailableSlots>>(
-    `/api/slots/available?date=${encodeURIComponent(date)}`,
+    `/api/slots/available?${searchParams.toString()}`,
   )
   return res?.data ?? { date, slots: [] }
 }
