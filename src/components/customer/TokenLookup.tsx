@@ -40,8 +40,10 @@ export function TokenLookup() {
 
   return (
     <div className="mt-6">
-      <p className="mb-3 text-center text-sm text-ink-muted">Already have a token?</p>
-      <form onSubmit={handleCheck} className="flex gap-2" noValidate>
+      <p className="mb-3 text-center text-sm leading-6 text-ink-muted">
+        Already have a token? Track your place in line and see when you're next on the chair.
+      </p>
+      <form onSubmit={handleCheck} className="grid gap-3 sm:grid-cols-[1fr_auto]" noValidate>
         <Input
           placeholder="Token # (e.g. 042)"
           value={value}
@@ -51,15 +53,16 @@ export function TokenLookup() {
           }}
           inputMode="numeric"
           maxLength={3}
-          className="flex-1"
+          className="flex-1 min-w-0"
           aria-label="Token number"
         />
         <Button
           type="submit"
           variant="secondary"
+          size="md"
           loading={isChecking}
           disabled={!value.trim()}
-          className="flex-1"
+          className="h-11"
         >
           Check
         </Button>

@@ -9,36 +9,40 @@ interface ShopHeaderProps {
 
 export function ShopHeader({ shop, waitingCount, estimatedWait }: ShopHeaderProps) {
   return (
-    <header className="pt-8 pb-6 text-center">
-      <h1 className="text-2xl font-bold tracking-tight text-ink-primary">
-        {shop.name}
-      </h1>
-      {shop.tagline && (
-        <p className="mt-1 text-sm text-ink-muted">{shop.tagline}</p>
-      )}
+    <header className="text-center">
+      <p className="text-xs uppercase tracking-[0.35em] text-ink-muted">Premium barbershop</p>
+      <div className="mt-4">
+        <h1 className="text-4xl font-semibold tracking-tight text-ink-primary sm:text-5xl">
+          {shop.name}
+        </h1>
+        {shop.tagline && (
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-ink-secondary sm:text-lg">
+            {shop.tagline}
+          </p>
+        )}
+      </div>
 
-      <div className="mt-4 flex items-center justify-center gap-3">
+      <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
         <StatusPill isOpen={shop.isOpen} />
         {shop.isOpen && waitingCount > 0 && (
-          <>
-            <span className="text-line">·</span>
-            <span className="text-sm text-ink-secondary">
-              {waitingCount} waiting
-            </span>
-            <span className="text-line">·</span>
-            <span className="text-sm text-ink-secondary">
-              ~{estimatedWait} min wait
-            </span>
+          <> 
+            <StatusDetail label="Waiting" value={`${waitingCount}`} />
+            <StatusDetail label="Estimated" value={`${estimatedWait} min`} />
           </>
         )}
         {shop.isOpen && waitingCount === 0 && (
-          <>
-            <span className="text-line">·</span>
-            <span className="text-sm text-emerald-500">No wait — walk right in</span>
-          </>
+          <span className="text-sm text-emerald-400">No wait — walk right in</span>
         )}
       </div>
     </header>
+  )
+}
+
+function StatusDetail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-full border border-line px-3 py-1 text-sm text-ink-secondary">
+      <span className="font-semibold text-ink-primary">{value}</span> {label}
+    </div>
   )
 }
 
