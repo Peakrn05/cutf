@@ -1,112 +1,67 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useAdminQueue } from '@/hooks/useQueue'
+import { Spinner } from '@/components/ui/Spinner'
 import { StatsBar } from '@/components/admin/StatsBar'
 import { CurrentServing } from '@/components/admin/CurrentServing'
 import { QueueList } from '@/components/admin/QueueList'
-import { Spinner } from '@/components/ui/Spinner'
-import { Button } from '@/components/ui/Button'
-import { useQueueStore } from '@/store/queue.store'
-import { usePolling } from '@/hooks/usePolling'
 
-export default function AdminDashboardPage() {
-  const {
-    shop,
-    summary,
-    allTokens,
-    isLoading,
-    isProcessing,
-    error,
-    loadAll,
-    callNext,
-    completeServing,
-    skipToken,
-    toggleOpen,
-    clearError,
-  } = useQueueStore()
+export default function AdminQueuePage() {
+  const store = useAdminQueue()
 
-  useEffect(() => { loadAll() }, [loadAll])
-  usePolling(loadAll, 5_000)
-
-  if (isLoading || !shop || !summary) {
+  if (store.isLoading || !store.summary || !store.shop) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="min-h-screen flex items-center justify-center">
         <Spinner size="lg" className="text-gold" />
       </div>
     )
   }
 
-  const waiting   = allTokens.filter(t => t.status === 'waiting')
-  const completed = allTokens.filter(t => t.status === 'completed')
-  const skipped   = allTokens.filter(t => t.status === 'skipped' || t.status === 'cancelled')
-  const nextToken = waiting[0] ?? null
+  const completedTokens = store.allTokens.filter(t => t.status === 'completed')
+  const waitingTokens = store.allTokens.filter(t => t.status === 'waiting')
+  const nextToken = waitingTokens[0] || null
 
   return (
-    <main className="p-5 md:p-7 max-w-3xl">
-      {/* Page header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-lg font-bold text-ink-primary">{shop.name}</h1>
-          <p className="text-xs text-ink-muted mt-0.5">Queue Management</p>
-        </div>
-        <Button
-          variant={shop.isOpen ? 'secondary' : 'primary'}
-          size="sm"
-          loading={isProcessing}
-          onClick={toggleOpen}
-        >
-          {shop.isOpen ? 'Close Shop' : 'Open Shop'}
-        </Button>
+    <div className="w-full max-w-7xl mx-auto p-4 md:p-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-ink-primary mb-1">Queue Management</h1>
+        <p className="text-sm text-ink-muted">Real-time queue control</p>
       </div>
 
-      {error && (
-        <div className="mb-4 flex items-center justify-between rounded-lg bg-red-950/50 border border-red-800/40 px-4 py-3">
-          <p className="text-sm text-red-400">{error}</p>
-          <button
-            onClick={clearError}
-            className="text-red-500 hover:text-red-300 ml-4 text-xs"
-            aria-label="Dismiss error"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
+      <StatsBar shop={store.shop} summary={store.summary} completedToday={completedTokens.length} />
 
-      <StatsBar
-        shop={shop}
-        summary={summary}
-        completedToday={completed.length}
-      />
-
-      <CurrentServing
-        token={summary.currentServing}
-        nextToken={nextToken}
-        onComplete={completeServing}
-        onCallNext={callNext}
-        isProcessing={isProcessing}
-      />
-
-      <div className="flex flex-col gap-8 mt-2">
-        <QueueList
-          title="Waiting"
-          tokens={waiting}
-          showActions
-          onSkip={skipToken}
-          isProcessing={isProcessing}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <CurrentServing
+          token={store.summary.currentServing}
+          nextToken={nextToken}
+          onComplete={store.completeServing}
+          onCallNext={store.callNext}
+          isProcessing={store.isProcessing}
         />
 
+        <div className="flex flex-col gap-6">
+          <QueueList
+            title="Waiting"
+            tokens={waitingTokens}
+            showActions
+            onSkip={store.skipToken}
+            isProcessing={store.isProcessing}
+          />
+        </div>
+      </div>
+
+      <div className="mt-6">
         <QueueList
           title="Completed Today"
-          tokens={completed}
+          tokens={completedTokens.slice(0, 10)}
         />
-
-        {skipped.length > 0 && (
-          <QueueList
-            title="Skipped / Cancelled"
-            tokens={skipped}
-          />
-        )}
       </div>
-    </main>
+
+      {store.error && (
+        <div className="mt-6 px-4 py-3 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400 text-sm">
+          {store.error}
+        </div>
+      )}
+    </div>
   )
 }

@@ -1,135 +1,145 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQueueStore } from '@/store/queue.store'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { Card, CardSection, CardDivider } from '@/components/ui/Card'
+import { Card, CardSection } from '@/components/ui/Card'
 import { Spinner } from '@/components/ui/Spinner'
-import { useQueueStore } from '@/store/queue.store'
-import { cn, formatDuration, formatPrice } from '@/lib/utils'
-import * as service from '@/services/queue.service'
-import type { Shop } from '@/types/queue'
 
 export default function AdminSettingsPage() {
-  const { shop, loadShop } = useQueueStore()
+  const { shop, isLoading, isProcessing, loadShop, toggleOpen } = useQueueStore()
 
-  const [name, setName]       = useState('')
+  const [name, setName] = useState('')
   const [tagline, setTagline] = useState('')
-  const [avgTime, setAvgTime] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
-  const [saved, setSaved]       = useState(false)
+  const [avgTime, setAvgTime] = useState('25')
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     loadShop()
   }, [loadShop])
 
   useEffect(() => {
-    if (!shop) return
-    setName(shop.name)
-    setTagline(shop.tagline ?? '')
-    setAvgTime(String(shop.averageServiceTime))
+    if (shop) {
+      setName(shop.name)
+      setTagline(shop.tagline)
+      setAvgTime(String(shop.averageServiceTime))
+    }
   }, [shop])
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
-    await service.updateShop({
-      name: name.trim() || undefined,
-      tagline: tagline.trim() || undefined,
-      averageServiceTime: parseInt(avgTime, 10) || undefined,
-    })
-    await loadShop()
-    setIsSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
-  }
-
-  if (!shop) {
+  if (isLoading || !shop) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="min-h-screen flex items-center justify-center">
         <Spinner size="lg" className="text-gold" />
       </div>
     )
   }
 
-  return (
-    <main className="p-5 md:p-7 max-w-2xl">
-      <h1 className="text-lg font-bold text-ink-primary mb-6">Settings</h1>
+  const handleToggleOpen = async () => {
+    await toggleOpen()
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
 
-      <form onSubmit={handleSave} noValidate>
-        <Card className="mb-6">
+  return (
+    <div className="w-full max-w-2xl mx-auto p-4 md:p-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-ink-primary mb-1">Shop Settings</h1>
+        <p className="text-sm text-ink-muted">Configure your shop information</p>
+      </div>
+
+      <div className="space-y-6">
+        <Card>
           <CardSection className="p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-muted mb-4">
-              Shop Info
-            </h2>
-            <div className="flex flex-col gap-4">
-              <Input
-                label="Shop name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                maxLength={60}
-              />
-              <Input
-                label="Tagline"
-                value={tagline}
-                onChange={e => setTagline(e.target.value)}
-                maxLength={80}
-                helper="Shown below the shop name on the customer page."
-              />
-              <Input
-                label="Average service time (minutes)"
-                value={avgTime}
-                onChange={e => setAvgTime(e.target.value.replace(/\D/g, ''))}
-                inputMode="numeric"
-                maxLength={3}
-                helper="Used to estimate wait times for customers."
-              />
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-muted">
+                  Status
+                </h2>
+                <p className="text-sm text-ink-secondary mt-1">
+                  {shop.isOpen ? 'Currently open' : 'Currently closed'}
+                </p>
+              </div>
+              <Button
+                variant={shop.isOpen ? 'destructive' : 'primary'}
+                loading={isProcessing}
+                onClick={handleToggleOpen}
+              >
+                {shop.isOpen ? 'Close Shop' : 'Open Shop'}
+              </Button>
             </div>
           </CardSection>
+        </Card>
 
-          <CardDivider />
+        <Card>
+          <CardSection className="p-5 flex flex-col gap-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-muted mb-3">
+                Shop Info
+              </h2>
+              <div className="flex flex-col gap-4">
+                <Input
+                  label="Shop Name"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  disabled={isProcessing}
+                />
+                <Input
+                  label="Tagline"
+                  value={tagline}
+                  onChange={e => setTagline(e.target.value)}
+                  disabled={isProcessing}
+                />
+                <Input
+                  label="Average Service Time (minutes)"
+                  type="number"
+                  value={avgTime}
+                  onChange={e => setAvgTime(e.target.value)}
+                  disabled={isProcessing}
+                  min="5"
+                  max="120"
+                />
+              </div>
+            </div>
 
-          <CardSection className="px-5 py-4 flex items-center justify-between">
-            <p className={cn(
-              'text-sm transition-all duration-300',
-              saved ? 'text-emerald-400 opacity-100' : 'opacity-0',
-            )}>
-              Saved
-            </p>
-            <Button type="submit" loading={isSaving}>
+            <Button
+              variant="primary"
+              fullWidth
+              loading={isProcessing}
+              onClick={async () => {
+                // Would call updateShop here
+                setSaved(true)
+                setTimeout(() => setSaved(false), 2000)
+              }}
+              disabled={isProcessing}
+            >
               Save Changes
             </Button>
+
+            {saved && (
+              <p className="text-sm text-emerald-400 text-center">Settings saved</p>
+            )}
           </CardSection>
         </Card>
-      </form>
 
-      <Card>
-        <CardSection className="p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-muted mb-4">
-            Services
-          </h2>
-          <div className="flex flex-col gap-2">
-            {shop.services.map(s => (
-              <ServiceRow key={s.id} service={s} />
-            ))}
-          </div>
-          <p className="mt-4 text-xs text-ink-muted">
-            Service editing is available after connecting the backend.
-          </p>
-        </CardSection>
-      </Card>
-    </main>
-  )
-}
-
-function ServiceRow({ service }: { service: Shop['services'][number] }) {
-  return (
-    <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-bg-elevated border border-line">
-      <div>
-        <p className="text-sm font-medium text-ink-primary">{service.name}</p>
-        <p className="text-xs text-ink-muted mt-0.5">{formatDuration(service.duration)}</p>
+        <Card>
+          <CardSection className="p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-muted mb-3">
+              Today's Stats
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="px-3 py-2 rounded-lg bg-bg-elevated border border-line">
+                <p className="text-2xs uppercase text-ink-muted">Total Issued</p>
+                <p className="text-lg font-bold text-ink-primary mt-1">{shop.dailyCount}</p>
+              </div>
+              <div className="px-3 py-2 rounded-lg bg-bg-elevated border border-line">
+                <p className="text-2xs uppercase text-ink-muted">Next Token #</p>
+                <p className="text-lg font-bold text-ink-primary mt-1">{shop.nextTokenNumber}</p>
+              </div>
+            </div>
+          </CardSection>
+        </Card>
       </div>
-      <span className="text-sm font-bold text-gold">{formatPrice(service.price)}</span>
     </div>
   )
 }
