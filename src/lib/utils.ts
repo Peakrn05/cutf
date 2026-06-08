@@ -92,3 +92,21 @@ export function formatServiceLabel(serviceId: string): string {
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' + ')
 }
+
+/**
+ * Sanitize phone input: remove non-digits and limit to 10 characters.
+ */
+export function sanitizePhone(input: string): string {
+  return input.replace(/\D/g, '').slice(0, 10)
+}
+
+/**
+ * Format a 10-digit phone as (123) 456-7890, otherwise return raw digits.
+ */
+export function formatPhone(digits: string): string {
+  const d = digits.replace(/\D/g, '')
+  if (d.length === 10) {
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  }
+  return d
+}

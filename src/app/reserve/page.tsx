@@ -7,6 +7,7 @@ import { TimeSlotGrid } from '@/components/reservation/TimeSlotGrid'
 import { ServiceSelector } from '@/components/customer/ServiceSelector'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { formatServiceLabel, sanitizePhone, formatPhone } from '@/lib/utils'
 import { Card, CardSection, CardDivider } from '@/components/ui/Card'
 import { Spinner } from '@/components/ui/Spinner'
 import { fetchAvailableSlots, reserveSlot } from '@/services/slot.service'
@@ -91,6 +92,10 @@ export default function ReservePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedTime || !selectedService || !customerName.trim()) return
+    if (customerPhone && customerPhone.length !== 10) {
+      setError('Phone number must be 10 digits.')
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
@@ -128,7 +133,7 @@ export default function ReservePage() {
               <Row label="Time" value={fmt12h(confirmed.timeSlot)} />
               <Row label="Service" value={serviceName} />
               {confirmed.customerPhone && (
-                <Row label="Phone" value={confirmed.customerPhone} />
+                <Row label="Phone" value={formatPhone(confirmed.customerPhone)} />
               )}
             </CardSection>
             <CardDivider />
@@ -259,12 +264,15 @@ export default function ReservePage() {
 
                   <Input
                     label="Phone number"
-                    placeholder="Optional"
+                    placeholder="Optional — 10 digits"
                     value={customerPhone}
-                    onChange={e => setCustomerPhone(e.target.value)}
-                    maxLength={20}
+                    onChange={e => setCustomerPhone(sanitizePhone(e.target.value))}
+                    maxLength={10}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     autoComplete="tel"
                     type="tel"
+                    helper="Numbers only — 10 digits"
                   />
 
                   {error && (
