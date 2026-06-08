@@ -40,6 +40,8 @@ export interface Shop {
   name: string
   tagline: string
   isOpen: boolean
+  openTime: string            // "HH:MM" 24h
+  closeTime: string           // "HH:MM" 24h
   services: Service[]
   averageServiceTime: number  // minutes
   nextTokenNumber: number     // increments each token taken today
@@ -52,4 +54,7 @@ export interface QueueSummary {
   upNext: QueueToken[]   // next 3 after current
   estimatedWaitForNew: number
   averageServiceTime: number
+  isQueueFull: boolean
+  openTime: string
+  closeTime: string
 }

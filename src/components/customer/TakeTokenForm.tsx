@@ -36,7 +36,7 @@ export function TakeTokenForm({ shop, summary }: TakeTokenFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedService || !shop.isOpen) return
+    if (!selectedService || !shop.isOpen || summary.isQueueFull) return
 
     const token = await takeToken(selectedService, customerName || undefined)
     setNewTokenNumber(token.number)
@@ -68,7 +68,15 @@ export function TakeTokenForm({ shop, summary }: TakeTokenFormProps) {
             </div>
           )}
 
-          {shop.isOpen && (
+          {shop.isOpen && summary.isQueueFull && (
+            <div className="rounded-lg bg-amber-950/40 border border-amber-800/40 px-4 py-3 text-sm text-amber-400">
+              Queue is full — we cannot accept more customers before closing at{' '}
+              <span className="font-semibold">{formatClose(summary.closeTime)}</span>.
+              Please come back tomorrow.
+            </div>
+          )}
+
+          {shop.isOpen && !summary.isQueueFull && (
             <>
               <ServiceSelector
                 services={shop.services}
@@ -112,6 +120,13 @@ export function TakeTokenForm({ shop, summary }: TakeTokenFormProps) {
       </Card>
     </form>
   )
+}
+
+function formatClose(hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number)
+  const suffix = h >= 12 ? 'PM' : 'AM'
+  const hour = h % 12 || 12
+  return `${hour}:${m.toString().padStart(2, '0')} ${suffix}`
 }
 
 function TokenIssuedCard({ number }: { number: number }) {

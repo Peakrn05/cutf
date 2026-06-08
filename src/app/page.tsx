@@ -3,6 +3,7 @@
 import { useEffect, useCallback } from 'react'
 import { TakeTokenForm } from '@/components/customer/TakeTokenForm'
 import { ShopHeader } from '@/components/customer/ShopHeader'
+import { CurrentQueueFrame } from '@/components/customer/CurrentQueueFrame'
 import { TokenLookup } from '@/components/customer/TokenLookup'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
@@ -67,6 +68,9 @@ export default function CustomerHomePage() {
     upNext: [],
     estimatedWaitForNew: 0,
     averageServiceTime: shop.averageServiceTime,
+    isQueueFull: false,
+    openTime: shop.openTime ?? '09:00',
+    closeTime: shop.closeTime ?? '18:00',
   }
 
   return (
@@ -78,11 +82,25 @@ export default function CustomerHomePage() {
           estimatedWait={queueSummary.estimatedWaitForNew}
         />
 
+        <CurrentQueueFrame summary={queueSummary} />
+
         <TakeTokenForm shop={shop} summary={queueSummary} />
 
         <TokenLookup />
 
-        <footer className="mt-10 text-center text-xs text-ink-muted">
+        {/* Book a slot banner */}
+        <a
+          href="/reserve"
+          className="mt-4 flex items-center justify-between w-full rounded-xl border border-line bg-bg-elevated px-4 py-3 hover:border-line-focus transition-colors group"
+        >
+          <div>
+            <p className="text-sm font-semibold text-ink-primary">Book a time slot</p>
+            <p className="text-xs text-ink-muted mt-0.5">Reserve your spot for tomorrow or later</p>
+          </div>
+          <span className="text-ink-muted group-hover:text-ink-secondary text-lg">→</span>
+        </a>
+
+        <footer className="mt-8 text-center text-xs text-ink-muted">
           <a
             href="/display"
             className="hover:text-ink-secondary transition-colors"
