@@ -6,12 +6,24 @@ import { NextUpDisplay } from '@/components/display/NextUpDisplay'
 import { Spinner } from '@/components/ui/Spinner'
 
 export default function DisplayBoardPage() {
-  const { summary, shop } = useDisplayBoard()
+  const { summary, shop, hasInitialized } = useDisplayBoard()
 
-  if (!summary || !shop) {
+  if (!hasInitialized) {
     return (
       <div className="display-root flex items-center justify-center">
         <Spinner size="lg" className="text-gold" />
+      </div>
+    )
+  }
+
+  // Show offline state on TV board instead of infinite spinner
+  if (!shop || !summary) {
+    return (
+      <div className="display-root flex flex-col items-center justify-center gap-4">
+        <p className="text-sm font-semibold tracking-widest uppercase text-ink-muted">
+          Server offline
+        </p>
+        <p className="text-xs text-ink-muted">Reconnecting...</p>
       </div>
     )
   }

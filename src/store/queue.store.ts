@@ -11,6 +11,7 @@ interface QueueStore {
   allTokens: QueueToken[]
   isLoading: boolean
   isProcessing: boolean
+  hasInitialized: boolean   // true once first load attempt completes (success or fail)
   error: string | null
 
   // ---- shared reads ----
@@ -36,23 +37,27 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
   allTokens: [],
   isLoading: false,
   isProcessing: false,
+  hasInitialized: false,
   error: null,
 
   loadShop: async () => {
+    set({ isLoading: true })
     try {
       const shop = await service.fetchShop()
-      set({ shop })
-    } catch {
-      set({ error: 'Failed to load shop.' })
+      set({ shop, isLoading: false, hasInitialized: true, error: null })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Cannot reach the server.'
+      set({ isLoading: false, hasInitialized: true, error: msg })
     }
   },
 
   loadSummary: async () => {
     try {
       const summary = await service.fetchQueueSummary()
-      set({ summary })
-    } catch {
-      set({ error: 'Failed to load queue status.' })
+      set({ summary, hasInitialized: true, error: null })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Cannot reach the server.'
+      set({ hasInitialized: true, error: msg })
     }
   },
 
@@ -64,9 +69,10 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
         service.fetchQueueSummary(),
         service.fetchAllTokens(),
       ])
-      set({ shop, summary, allTokens, isLoading: false })
-    } catch {
-      set({ isLoading: false, error: 'Failed to load data.' })
+      set({ shop, summary, allTokens, isLoading: false, hasInitialized: true, error: null })
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Cannot reach the server.'
+      set({ isLoading: false, hasInitialized: true, error: msg })
     }
   },
 

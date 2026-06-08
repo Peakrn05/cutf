@@ -35,7 +35,7 @@ export function useTokenStatus(tokenNumber: number, pollMs = 4_000) {
 
 // Hook for the display board — polls aggressively
 export function useDisplayBoard(pollMs = 3_000) {
-  const { summary, shop, loadSummary, loadShop } = useQueueStore()
+  const { summary, shop, hasInitialized, loadSummary, loadShop } = useQueueStore()
 
   useEffect(() => {
     loadShop()
@@ -44,7 +44,7 @@ export function useDisplayBoard(pollMs = 3_000) {
 
   usePolling(loadSummary, pollMs)
 
-  return { summary, shop }
+  return { summary, shop, hasInitialized }
 }
 
 // Hook for admin — loads everything + polls

@@ -1,7 +1,3 @@
-// HTTP client — currently unused (all data comes from the mock service).
-// When the backend is ready: set NEXT_PUBLIC_API_URL and replace mock calls
-// in /src/services/queue.service.ts with calls to `apiFetch`.
-
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE'
@@ -22,26 +18,40 @@ export async function apiFetch<T>(
   path: string,
   method: Method = 'GET',
   body?: unknown,
+  timeoutMs = 8_000,
 ): Promise<T> {
-  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    cache: 'no-store',
-  })
+  try {
+    const headers: HeadersInit = { 'Content-Type': 'application/json' }
 
-  if (!res.ok) {
-    let message = `HTTP ${res.status}`
-    let code = 'HTTP_ERROR'
-    try {
-      const err = await res.json()
-      message = err.message ?? message
-      code = err.code ?? code
-    } catch {}
-    throw new ApiError(message, res.status, code)
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+
+    if (!res.ok) {
+      let message = `HTTP ${res.status}`
+      let code = 'HTTP_ERROR'
+      try {
+        const err = await res.json()
+        message = err.message ?? message
+        code = err.code ?? code
+      } catch {}
+      throw new ApiError(message, res.status, code)
+    }
+
+    return res.json() as Promise<T>
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new ApiError('Request timed out. Is the backend running?', 408, 'TIMEOUT')
+    }
+    throw e
+  } finally {
+    clearTimeout(timer)
   }
-
-  return res.json() as Promise<T>
 }

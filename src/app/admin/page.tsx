@@ -9,10 +9,27 @@ import { QueueList } from '@/components/admin/QueueList'
 export default function AdminQueuePage() {
   const store = useAdminQueue()
 
-  if (store.isLoading || !store.summary || !store.shop) {
+  // Not yet attempted first load
+  if (!store.hasInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Spinner size="lg" className="text-gold" />
+      </div>
+    )
+  }
+
+  // Backend unreachable
+  if (!store.shop) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-base font-semibold text-ink-primary">Cannot connect to server</p>
+        <p className="text-sm text-ink-secondary">{store.error ?? 'The server is not responding.'}</p>
+        <button
+          onClick={() => store.loadAll()}
+          className="mt-2 px-4 py-2 rounded-lg border border-line text-sm text-ink-secondary hover:text-ink-primary hover:border-line-focus transition-colors"
+        >
+          Retry
+        </button>
       </div>
     )
   }
